@@ -20,6 +20,8 @@ namespace MergeTest.Models
 
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
+        DbSet<Trip> Trips { get; set; }
+
         public ApplicationDbContext()
             : base("DefaultConnection", throwIfV1Schema: false)
         {
