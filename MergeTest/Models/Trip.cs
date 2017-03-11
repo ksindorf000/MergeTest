@@ -13,5 +13,7 @@ namespace MergeTest.Models
         public string Destination { get; set; }
         public float TargetAmt { get; set; }
         public int Testprop { get; set; }
+        public int TestPropTwo { get; set; }
+
     }
 }
