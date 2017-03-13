@@ -9,6 +9,7 @@ using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin.Security;
 using MergeTest.Models;
+using System.Data.Entity;
 
 namespace MergeTest.Controllers
 {
@@ -72,7 +73,7 @@ namespace MergeTest.Controllers
             {
                 return View(model);
             }
-
+            
             // This doesn't count login failures towards account lockout
             // To enable password failures to trigger account lockout, change to shouldLockout: true
             var result = await SignInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, shouldLockout: false);
@@ -150,13 +151,26 @@ namespace MergeTest.Controllers
         public async Task<ActionResult> Register(RegisterViewModel model)
         {
             if (ModelState.IsValid)
-            {
+            {                
                 var user = new ApplicationUser { UserName = model.Email, Email = model.Email };
                 var result = await UserManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)
                 {
                     await SignInManager.SignInAsync(user, isPersistent:false, rememberBrowser:false);
-                    
+
+                    int idxAT = model.Email.IndexOf("@");
+                    int idxPeriod = model.Email.IndexOf(".") - 1;
+
+                    string un1 = model.Email.Substring(0, idxAT);
+                    string un2 = model.Email.Substring((idxAT + 1), (idxPeriod - idxAT));
+
+                    string username = un1 + un2;
+                    user.UserName = username;
+
+                    ApplicationDbContext db = new ApplicationDbContext();
+                    db.Entry(user).State = EntityState.Modified;
+                    db.SaveChanges();
+
                     // For more information on how to enable account confirmation and password reset please visit http://go.microsoft.com/fwlink/?LinkID=320771
                     // Send an email with this link
                     // string code = await UserManager.GenerateEmailConfirmationTokenAsync(user.Id);
@@ -367,6 +381,7 @@ namespace MergeTest.Controllers
                 {
                     return View("ExternalLoginFailure");
                 }
+                
                 var user = new ApplicationUser { UserName = model.Email, Email = model.Email };
                 var result = await UserManager.CreateAsync(user);
                 if (result.Succeeded)
